@@ -7,7 +7,7 @@ pytest-django>=3.8.0
 pytest>=3.6
 pytest-cov>=1.6
 flake8>=2.4.0
-django-extensions>=3.2.1"
+django-extensions>=3.2.1
 shortuuid>=1.0.11
 
 # wheel for PyPI installs
