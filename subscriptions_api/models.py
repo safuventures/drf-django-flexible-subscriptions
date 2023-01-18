@@ -12,7 +12,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from subscriptions_api.app_settings import SETTINGS
-from subscriptions_api.base_models import BaseUserSubscription, BaseSubscriptionTransaction
+from subscriptions_api.base_models import BaseUserSubscription, BaseSubscriptionTransaction, UUIDModel
 
 # Convenience references for units for plan recurrence billing
 # ----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ def activate_default_user_subscription(user):
                                          resuse=True)
 
 
-class PlanTag(models.Model):
+class PlanTag(UUIDModel):
     """A tag for a subscription plan."""
     tag = models.CharField(
         help_text=_('the tag name'),
@@ -72,14 +72,8 @@ class PlanTag(models.Model):
         return self.tag
 
 
-class SubscriptionPlan(models.Model):
+class SubscriptionPlan(UUIDModel):
     """Details for a subscription plan."""
-    id = models.UUIDField(
-        default=uuid4,
-        editable=False,
-        primary_key=True,
-        verbose_name='ID',
-    )
     plan_name = models.CharField(
         help_text=_('the name of the subscription plan'),
         max_length=128,
@@ -90,18 +84,6 @@ class SubscriptionPlan(models.Model):
         max_length=128,
         null=True,
         unique=True,
-    )
-    feature_ref = models.CharField(
-        blank=True,
-        help_text=_('Reference to select list of allowed features for this plan'),
-        max_length=100,
-        null=True,
-        unique=True,
-    )
-    features = models.TextField(
-        blank=True,
-        help_text=_('dict of json allowed features for this plan'),
-        null=True
     )
     plan_description = models.CharField(
         blank=True,
@@ -149,20 +131,6 @@ class SubscriptionPlan(models.Model):
             ('subscriptions', 'Can interact with subscription details'),
         )
 
-    def get_features(self):
-        if self.features:
-            return json.loads(self.features)
-        return {}
-
-    def __getattr__(self, name):
-        feature_dict = self.get_features()
-        if feature_dict:
-            try:
-                return feature_dict[name]
-            except KeyError:
-                pass
-        raise AttributeError
-
     def __str__(self):
         return self.plan_name
 
@@ -176,14 +144,8 @@ class SubscriptionPlan(models.Model):
         return ', '.join(tag.tag for tag in self.tags.all()[:3])
 
 
-class PlanCost(models.Model):
+class PlanCost(UUIDModel):
     """Cost and frequency of billing for a plan."""
-    id = models.UUIDField(
-        default=uuid4,
-        editable=False,
-        primary_key=True,
-        verbose_name='ID',
-    )
     plan = models.ForeignKey(
         SubscriptionPlan,
         help_text=_('the subscription plan for these cost details'),
@@ -366,7 +328,7 @@ class PlanCost(models.Model):
         return '{} {} {}'.format(self.plan.plan_name, self.display_billing_frequency_text, self.cost)
 
 
-class PlanList(models.Model):
+class PlanList(UUIDModel):
     """Model to record details of a display list of SubscriptionPlans."""
     title = models.TextField(
         blank=True,
@@ -380,35 +342,10 @@ class PlanList(models.Model):
         null=True,
         unique=True,
     )
-    features = models.TextField(
-        blank=True,
-        help_text=_('Json dict for allowed features to display for the plan list'),
-        null=True
-    )
-    subtitle = models.TextField(
-        blank=True,
-        help_text=_('subtitle to display on the subscription plan list page'),
-        null=True,
-    )
-    header = models.TextField(
-        blank=True,
-        help_text=_('header text to display on the subscription plan list page'),
-        null=True,
-    )
-    footer = models.TextField(
-        blank=True,
-        help_text=_('header text to display on the subscription plan list page'),
-        null=True,
-    )
     active = models.BooleanField(
         default=True,
         help_text=_('whether this plan list is active or not.'),
     )
-
-    def get_features(self):
-        if self.features:
-            return json.loads(self.features)
-        return {}
 
     def __str__(self):
         return self.title
@@ -417,7 +354,7 @@ class PlanList(models.Model):
         ordering = ('title',)
 
 
-class PlanListDetail(models.Model):
+class PlanListDetail(UUIDModel):
     """Model to add additional details to plans when part of PlanList."""
     plan = models.ForeignKey(
         SubscriptionPlan,
@@ -428,17 +365,6 @@ class PlanListDetail(models.Model):
         PlanList,
         on_delete=models.CASCADE,
         related_name='plan_list_details',
-    )
-    html_content = models.TextField(
-        blank=True,
-        help_text=_('HTML content can also be json object to display for plan'),
-        null=True,
-    )
-    subscribe_button_text = models.CharField(
-        blank=True,
-        default='Subscribe',
-        max_length=128,
-        null=True,
     )
     order = models.PositiveIntegerField(
         default=1,

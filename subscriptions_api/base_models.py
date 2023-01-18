@@ -8,6 +8,7 @@ from django.contrib.auth.models import Group
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django_extensions.db.fields import ShortUUIDField
 
 from subscriptions_api.app_settings import SETTINGS
 
@@ -17,12 +18,18 @@ SubscriptionTransactionModel = swapper.get_model_name(
 UserSubscriptionModel = swapper.get_model_name("subscriptions_api", "UserSubscription")
 
 
-class BaseUserSubscription(models.Model):
+class UUIDModel(models.Model):
+    """Needed to hide sequential keys from API endpoints"""
+
+    uuid = ShortUUIDField(db_index=True, editable=False, unique=True)
+
+    class Meta:
+        abstract = True
+
+
+class BaseUserSubscription(UUIDModel):
     """Details of a user's specific subscription."""
 
-    id = models.UUIDField(
-        default=uuid4, editable=False, primary_key=True, verbose_name="ID",
-    )
     user = models.ForeignKey(
         get_user_model(),
         help_text=_("the user this subscription applies to"),
@@ -272,12 +279,9 @@ class BaseUserSubscription(models.Model):
         )
 
 
-class BaseSubscriptionTransaction(models.Model):
+class BaseSubscriptionTransaction(UUIDModel):
     """Details for a subscription plan billing."""
 
-    id = models.UUIDField(
-        default=uuid4, editable=False, primary_key=True, verbose_name="ID",
-    )
     user = models.ForeignKey(
         get_user_model(),
         help_text=_("the user that this subscription was billed for"),
