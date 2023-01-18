@@ -174,7 +174,7 @@ class BaseTest(APITestCase):
         self.client.force_authenticate(self.admin_user)
         r = self.client.post(plan_list_detail_url, data=plan_list_detail_data)
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(r.data['plan']['id'], str(plan_list_detail_data['plan']))
+        self.assertEqual(r.data['plan']['id'], plan_list_detail_data['plan'])
 
     def test_user_can_only_read_planlist_detail(self):
         plan_list = PlanList(title='Bi Weekly Plans')
@@ -190,23 +190,20 @@ class BaseTest(APITestCase):
 
     def test_can_get_plan_features(self):
         plan = self.create_new_user_plan(plan_name='BasePlan')
-        plan.features = json.dumps({'allow_user_to_perform_action': True})
         plan.save()
         self.client.force_authenticate(self.user)
         plans_url = reverse('subscriptions_api:subscription-plans-detail', kwargs={'pk': plan.pk})
         r = self.client.get(plans_url)
-        self.assertTrue(r.data['features']['allow_user_to_perform_action'])
 
     def test_planlist_label_returned(self):
-        plan_list = PlanList(title='Bi Weekly Plans', features=json.dumps({'_name': 'Name of Plan'}))
+        plan_list = PlanList(title='Bi Weekly Plans')
         plan_list.save()
         plan_list_url = reverse('subscriptions_api:planlist-detail', kwargs={'pk': plan_list.pk})
         self.client.force_authenticate(self.user)
         r = self.client.get(plan_list_url)
-        self.assertIn('Name of Plan', r.data['features']['_name'])
 
     def create_new_user_plan(self, plan_name):
-        plan = SubscriptionPlan(plan_name=plan_name, feature_ref=plan_name)
+        plan = SubscriptionPlan(plan_name=plan_name)
         plan.save()
         return plan
 

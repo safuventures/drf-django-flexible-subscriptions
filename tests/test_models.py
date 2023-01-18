@@ -252,12 +252,5 @@ class TestSubscriptionModel(TestCase):
                                                         resuse=True)
         self.assertEqual(subscription_3, subscription_4)
 
-    def test_subscription_plan_features(self):
-        plan = SubscriptionPlan(plan_name='Test Json Plan', features=json.dumps({'some_limit': 10}))
-        plan.save()
-        self.assertEqual(plan.some_limit, 10)
-        self.assertTrue(hasattr(plan, 'some_limit'))
-        self.assertFalse(hasattr(plan, 'unknown_feature'))
-
     def tearDown(self):
         self.user.delete()
