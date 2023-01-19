@@ -1,11 +1,10 @@
 """Models Gotten from the Flexible Subscriptions app.
     with minor changes
 """
-import json
 from datetime import timedelta
-from uuid import uuid4
 
 import swapper
+from djmoney.models.fields import MoneyField
 from django.contrib.auth.models import Group
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -181,9 +180,17 @@ class PlanCost(UUIDModel):
         max_digits=19,
         null=True,
     )
+    crypto_amount = MoneyField(
+        max_digits=24,
+        decimal_places=18,
+        default_currency="ETH",
+        help_text="If payment is made in crypto.",
+        blank=True,
+        null=True,
+    )
 
     class Meta:
-        ordering = ('recurrence_unit', 'recurrence_period', 'cost',)
+        ordering = ('recurrence_unit', 'recurrence_period', 'cost', 'crypto_amount')
 
     def activate_default_user_subscription(self, user):
         activate_default_user_subscription(user)

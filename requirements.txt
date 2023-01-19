@@ -9,6 +9,7 @@ pytest-cov>=1.6
 flake8>=2.4.0
 django-extensions>=3.2.1
 shortuuid>=1.0.11
+django-money>=3.0.0
 
 # wheel for PyPI installs
 wheel==0.24.0
